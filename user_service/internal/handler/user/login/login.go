@@ -27,25 +27,11 @@ type LogIn interface {
 	CheckUser(login string) (int, string, string, error)
 }
 
-type RedisSave interface {
-	SaveUserPermissions(id int, permissions string) error
+func LoginPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "user_service/web/template/login.html")
 }
 
-//func LoginPage(w http.ResponseWriter, r *http.Request) {
-//	tmpl, err := template.ParseFiles("user_service/web/template/login.html")
-//	if err != nil {
-//		http.Error(w, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//
-//	// Отправляем HTML-страницу в ответ на запрос
-//	if err := tmpl.Execute(w, nil); err != nil {
-//		http.Error(w, err.Error(), http.StatusInternalServerError)
-//		return
-//	}
-//}
-
-func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig, red RedisSave) http.HandlerFunc {
+func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req Request
 
@@ -109,19 +95,7 @@ func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig, red RedisSave) htt
 
 		log.Info("user id ", id)
 
-		err = red.SaveUserPermissions(id, permissions)
-		if err != nil {
-			log.Error("Internal server error в редисе")
-
-			render.JSON(w, r, Response{
-				Status: http.StatusInternalServerError,
-				Error:  "Internal server error",
-			})
-
-			return
-		}
-
-		token, err := jwt.NewToken(id, cfg)
+		token, err := jwt.NewToken(id, permissions, cfg)
 		if err != nil {
 
 			log.Error("Internal server error")

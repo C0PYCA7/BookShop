@@ -6,11 +6,12 @@ import (
 	"time"
 )
 
-func NewToken(id int, cfg config.JwtConfig) (string, error) {
+func NewToken(id int, permission string, cfg config.JwtConfig) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
 	claims["uid"] = id
+	claims["permission"] = permission
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix()
 
 	tokenString, err := token.SignedString([]byte(cfg.SecretKey))

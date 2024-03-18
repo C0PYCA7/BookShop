@@ -3,11 +3,9 @@ package main
 import (
 	"BookShop/user_service/internal/config"
 	"BookShop/user_service/internal/database/postgres"
-	"BookShop/user_service/internal/database/redis"
 	delete2 "BookShop/user_service/internal/handler/user/delete"
 	"BookShop/user_service/internal/handler/user/login"
 	"BookShop/user_service/internal/handler/user/registration"
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
@@ -17,17 +15,12 @@ import (
 
 func main() {
 	cfg := config.MustLoad()
-	fmt.Print(cfg)
 	log := newLogger()
 
 	database, err := postgres.New(cfg.Database)
 	if err != nil {
 		log.Error("failed to init database: ", err)
-	}
-
-	redisDb, err := redis.NewClient(cfg.Redis)
-	if err != nil {
-		log.Error("failed to init redis")
+		os.Exit(1)
 	}
 
 	router := chi.NewRouter()
@@ -36,8 +29,12 @@ func main() {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 
-	//router.Get("/login", login.LoginPage)
-	router.Post("/login", login.New(log, database, cfg.Jwt, redisDb))
+	fs := http.FileServer(http.Dir("user_service/web/static/js"))
+	router.Handle("/js/*", http.StripPrefix("/js", fs))
+
+	router.Get("/login", login.LoginPage)
+	router.Post("/login", login.New(log, database, cfg.Jwt))
+	router.Get("/registration", registration.RegistrationPage)
 	router.Post("/registration", registration.New(log, database))
 	router.Delete("/user/{id}", delete2.New(log, database))
 

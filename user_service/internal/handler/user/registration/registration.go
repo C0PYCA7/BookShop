@@ -15,6 +15,7 @@ type Request struct {
 	model.UserRegistration
 }
 
+// todo - наверное убрать Id из Response
 type Response struct {
 	Id     int    `json:"id"`
 	Status int    `json:"status"`
@@ -23,6 +24,10 @@ type Response struct {
 
 type CreateUser interface {
 	CreateUser(user *model.UserRegistration) (int, error)
+}
+
+func RegistrationPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "user_service/web/template/registration.html")
 }
 
 func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
@@ -52,8 +57,6 @@ func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 			return
 		}
 
-		log.Info("req before", req)
-
 		password, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
 			log.Error("failed to hash password")
@@ -67,8 +70,6 @@ func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 		}
 
 		req.Password = string(password)
-
-		log.Info("req after", req)
 
 		id, err := create.CreateUser(&req)
 		if err != nil {

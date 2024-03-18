@@ -11,6 +11,7 @@ type Config struct {
 	Env        string           `yaml:"env" envDefault:"local"`
 	Database   DatabaseConfig   `yaml:"database" env-required:"true"`
 	HttpServer HttpServerConfig `yaml:"http_server" env-required:"true"`
+	Jwt        JwtConfig        `yaml:"jwt" env-required:"true"`
 }
 
 type DatabaseConfig struct {
@@ -27,8 +28,12 @@ type HttpServerConfig struct {
 	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 }
 
+type JwtConfig struct {
+	SecretKey string `yaml:"secret_key"`
+}
+
 func MustLoad() *Config {
-	configPath := "user_service/config/config_user.yaml"
+	configPath := "book_service/config/config_book.yaml"
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		log.Fatal("config file doesn't exists: ", err)

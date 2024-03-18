@@ -72,7 +72,5 @@ func New(log *slog.Logger, user DeleteUser) http.HandlerFunc {
 		render.JSON(w, r, Response{
 			Status: http.StatusOK,
 		})
-
-		return
 	}
 }
