@@ -25,5 +25,9 @@ func New(log *slog.Logger, book ListBook) http.HandlerFunc {
 
 			render.JSON(w, r, Response{Status: http.StatusInternalServerError, Error: "failed to get all books"})
 		}
+
+		log.Info("got books: ", books)
+
+		render.JSON(w, r, Response{Books: books, Status: http.StatusOK})
 	}
 }

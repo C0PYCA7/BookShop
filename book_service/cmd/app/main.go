@@ -9,6 +9,7 @@ import (
 	"BookShop/book_service/internal/handler/book/add"
 	delete3 "BookShop/book_service/internal/handler/book/delete"
 	"BookShop/book_service/internal/handler/book/get"
+	"BookShop/book_service/internal/handler/book/list"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
@@ -33,12 +34,20 @@ func main() {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 
-	router.Delete("/author/{id}", delete2.New(log, database))
+	fs := http.FileServer(http.Dir("book_service/web/static/js"))
+	router.Handle("/js/*", http.StripPrefix("/js", fs))
+
 	router.Post("/newauthor", create.New(log, database))
+
+	router.Delete("/author/{id}", delete2.New(log, database))
 	router.Get("/author/{id}", check.New(log, database))
+
 	router.Get("/book/{id}", get.New(log, database))
 	router.Delete("/book/{id}", delete3.New(log, database))
+
 	router.Post("/newbook", add.New(log, database))
+
+	router.Get("/", list.New(log, database))
 	//todo: общая страничка со списком книг, создать, найти, удалить
 
 	_ = database

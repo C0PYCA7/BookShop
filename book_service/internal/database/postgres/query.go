@@ -182,16 +182,21 @@ func (d *Database) GetBookInfo(id int) (*model.BookInfo, error) {
 
 func (d *Database) GelAllBooks() ([]model.Book, error) {
 	query := `SELECT name, genre, price FROM book`
-	rows, err := d.db.Query(query)
 
 	var books []model.Book
 
+	rows, err := d.db.Query(query)
 	if err != nil {
+		return nil, fmt.Errorf("failed to get books: %w", ErrInternalServer)
+	}
+
+	for rows.Next() {
 		var book model.Book
 		if err := rows.Scan(&book.Name, &book.Genre, &book.Price); err != nil {
-			return nil, fmt.Errorf("failed to get all books: %w", ErrInternalServer)
+			return nil, fmt.Errorf("failed to get all books from rows: %w", ErrInternalServer)
 		}
 		books = append(books, book)
 	}
+
 	return books, nil
 }
