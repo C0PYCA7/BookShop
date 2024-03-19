@@ -6,7 +6,7 @@ type AddBook struct {
 	Name   string    `json:"name"`
 	Genre  string    `json:"genre"`
 	Author string    `json:"author"`
-	Year   time.Time `json:"year"`
+	Date   time.Time `json:"date"`
 	Price  float64   `json:"price"`
 }
 
@@ -23,10 +23,16 @@ type AuthorInfo struct {
 }
 
 type BookInfo struct {
-	Name          string    `db:"name"`
-	Genre         string    `db:"genre"`
-	Year          time.Time `db:"year"`
-	Price         float64   `db:"price"`
-	AuthorName    string    `db:"author_name"`
-	AuthorSurname string    `db:"author_surname"`
+	Name          string
+	Genre         string
+	Year          int
+	Price         float64
+	AuthorName    string
+	AuthorSurname string
+}
+
+type Book struct {
+	Name  string
+	Genre string
+	Price string
 }

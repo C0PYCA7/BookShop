@@ -6,6 +6,9 @@ import (
 	"BookShop/book_service/internal/handler/author/check"
 	"BookShop/book_service/internal/handler/author/create"
 	delete2 "BookShop/book_service/internal/handler/author/delete"
+	"BookShop/book_service/internal/handler/book/add"
+	delete3 "BookShop/book_service/internal/handler/book/delete"
+	"BookShop/book_service/internal/handler/book/get"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
@@ -33,6 +36,10 @@ func main() {
 	router.Delete("/author/{id}", delete2.New(log, database))
 	router.Post("/newauthor", create.New(log, database))
 	router.Get("/author/{id}", check.New(log, database))
+	router.Get("/book/{id}", get.New(log, database))
+	router.Delete("/book/{id}", delete3.New(log, database))
+	router.Post("/newbook", add.New(log, database))
+	//todo: общая страничка со списком книг, создать, найти, удалить
 
 	_ = database
 

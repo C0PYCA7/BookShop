@@ -1,4 +1,4 @@
-package create
+package add
 
 import (
 	"BookShop/book_service/internal/database/postgres"
@@ -10,76 +10,64 @@ import (
 	"net/http"
 )
 
+type AddBook interface {
+	AddBook(books *model.AddBook) (int, error)
+}
+
 type Response struct {
 	Id     int    `json:"id"`
 	Status int    `json:"status"`
 	Error  string `json:"error,omitempty"`
 }
 
-type CreateAuthor interface {
-	AddAuthor(author *model.AddAuthor) (int, error)
-}
-
-func New(log *slog.Logger, create CreateAuthor) http.HandlerFunc {
+func New(log *slog.Logger, book AddBook) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var req model.AddAuthor
+
+		var req model.AddBook
 
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			log.Error("failed to decode request body")
 
-			render.JSON(w, r, Response{
-				Status: http.StatusBadRequest,
-				Error:  "failed to decode request body",
-			})
+			render.JSON(w, r, Response{Status: http.StatusBadRequest, Error: "failed to decode request body"})
 
 			return
 		}
 
-		log.Info("decoded: ", req)
+		log.Info("decode success")
 
-		if err := validator.New().Struct(req); err != nil {
+		if err := validator.New().Struct(&req); err != nil {
 			log.Error("invalid request")
 
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "Invalid request",
 			})
-
 			return
 		}
 
 		log.Info("validate success")
 
-		id, err := create.AddAuthor(&req)
+		id, err := book.AddBook(&req)
 		if err != nil {
-			if errors.Is(err, postgres.ErrAuthorExists) {
-				log.Error("author exists")
+			if errors.Is(err, postgres.ErrAuthorNotFound) {
+				log.Error("author not found")
 
-				render.JSON(w, r, Response{
-					Status: http.StatusConflict,
-					Error:  "author exists",
-				})
+				render.JSON(w, r, Response{Status: http.StatusNotFound, Error: "author not found"})
 
 				return
 			}
+			log.Error("failed to insert book")
 
-			log.Error("failed to add author")
-
-			render.JSON(w, r, Response{
-				Status: http.StatusInternalServerError,
-				Error:  "internal server error",
-			})
+			render.JSON(w, r, Response{Status: http.StatusInternalServerError, Error: "failed to insert data"})
 
 			return
-
 		}
 
-		log.Info("add author ", id)
+		log.Info("insert success")
 
 		render.JSON(w, r, Response{
 			Id:     id,
 			Status: http.StatusOK,
 		})
-
 	}
 }

@@ -3,6 +3,7 @@ package postgres
 import (
 	"BookShop/book_service/internal/model"
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/lib/pq"
 	"log"
@@ -51,16 +52,19 @@ func (d *Database) AddBook(books *model.AddBook) (int, error) {
 	err = tx.QueryRow("SELECT id FROM author WHERE surname = $1", books.Author).Scan(&authorId)
 	if err != nil {
 		tx.Rollback()
-		return 0, fmt.Errorf("failed to get author id: %w", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, fmt.Errorf("author not found: %w", ErrAuthorNotFound)
+		}
+		return 0, fmt.Errorf("failed to get author id: %w", ErrInternalServer)
 	}
 
 	query := `INSERT INTO book(name, genre, id_author, date, price) 
 	VALUES ($1,$2,$3,$4,$5) RETURNING id`
 
-	err = tx.QueryRow(query, books.Name, books.Genre, authorId, books.Year, books.Price).Scan(&bookId)
+	err = tx.QueryRow(query, books.Name, books.Genre, authorId, books.Date, books.Price).Scan(&bookId)
 	if err != nil {
 		tx.Rollback()
-		return 0, fmt.Errorf("failed to insert book data: %w", err)
+		return 0, fmt.Errorf("failed to insert book data: %w", ErrInternalServer)
 	}
 
 	tx.Commit()
@@ -157,7 +161,7 @@ func (d *Database) DelBook(id int) error {
 	return nil
 }
 
-func (d *Database) GetBookInfo(id int) *model.BookInfo {
+func (d *Database) GetBookInfo(id int) (*model.BookInfo, error) {
 
 	query := `SELECT book.name, book.genre, EXTRACT(YEAR FROM book.date) AS year, book.price,
        	author.name AS author_name, author.surname AS author_surname
@@ -168,9 +172,26 @@ func (d *Database) GetBookInfo(id int) *model.BookInfo {
 
 	var info model.BookInfo
 
-	err := d.db.QueryRow(query, id).Scan(&info)
+	err := d.db.QueryRow(query, id).Scan(&info.Name, &info.Genre, &info.Year, &info.Price, &info.AuthorName, &info.AuthorSurname)
 	if err != nil {
 		log.Print(err)
+		return nil, fmt.Errorf("failed to get book info: %w", ErrInternalServer)
 	}
-	return &info
+	return &info, nil
+}
+
+func (d *Database) GelAllBooks() ([]model.Book, error) {
+	query := `SELECT name, genre, price FROM book`
+	rows, err := d.db.Query(query)
+
+	var books []model.Book
+
+	if err != nil {
+		var book model.Book
+		if err := rows.Scan(&book.Name, &book.Genre, &book.Price); err != nil {
+			return nil, fmt.Errorf("failed to get all books: %w", ErrInternalServer)
+		}
+		books = append(books, book)
+	}
+	return books, nil
 }
