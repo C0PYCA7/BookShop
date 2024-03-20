@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return `${year}-${month}-${day}T00:00:00Z`;
     }
 
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
         event.preventDefault();
 
         const name = document.querySelector('#name').value;
@@ -17,8 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const patronymic = document.querySelector('#patronymic').value;
         const birthdayInput = document.querySelector('#birthday');
         const birthday = formatDate(new Date(birthdayInput.value));
-
-        console.log(birthday)
 
         const data = {
             name,
@@ -29,20 +27,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const jsonData = JSON.stringify(data);
 
-        console.log(jsonData)
-
-        fetch('/newauthor', {
+        const response = await fetch('/newauthor', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: jsonData,
-        }).then((response) => {
-            if (response.ok) {
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+
+            console.log(data)
+
+            if (data.status === 200) {
                 alert('Данные доставлены');
+                window.location.href = '/'; // перенаправление на главную страницу
             } else {
                 alert('Ошибка при отправке данных');
             }
-        });
+        } else {
+            alert('Ошибка при отправке данных');
+        }
     });
 });

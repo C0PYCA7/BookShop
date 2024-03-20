@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).then((response) => {
             if (response.ok) {
                 alert('Данные доставлены');
+                window.location.href = '/'
             } else {
                 alert('Ошибка при отправке данных');
             }
