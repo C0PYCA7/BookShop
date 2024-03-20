@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('#log')
 
     form.addEventListener('submit', (event) => {
-        event.preventDefault();
+        event.preventDefault(); // отмена стандартного поведения формы
 
         const login = document.querySelector('#login').value
         const password = document.querySelector('#password').value
@@ -14,8 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const jsonData = JSON.stringify(data)
 
-        console.log(jsonData)
-
         fetch('/login', {
             method: 'POST',
             headers: {
@@ -24,10 +22,19 @@ document.addEventListener('DOMContentLoaded', () => {
             body: jsonData,
         }).then((response) => {
             if (response.ok) {
-                alert('Данные доставлены');
+                return response.json();
             } else {
-                alert('Ошибка при отправке данных');
+                throw new Error('Network response was not ok.');
             }
-        })
+        }).then((data) => {
+            if (data.status === 200) {
+                alert('Данные доставлены');
+                window.location.href = 'http://localhost:8080/'; // перенаправление на главную страницу
+            } else {
+                alert(data.error); // вывод сообщения об ошибке
+            }
+        }).catch((error) => {
+            console.error('There was a problem with the fetch operation:', error);
+        });
     })
 })

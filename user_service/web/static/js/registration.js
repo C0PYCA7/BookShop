@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('#reg');
 
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
         event.preventDefault();
 
         const name = document.querySelector('#name').value;
@@ -22,18 +22,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const jsonData = JSON.stringify(data);
 
-        fetch('/registration', {
+        const response = await fetch('/registration', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: jsonData,
-        }).then((response) => {
-            if (response.ok) {
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data.status === 200) {
                 alert('Данные доставлены');
+                window.location.href = '/login'; // перенаправление на страницу входа
             } else {
                 alert('Ошибка при отправке данных');
             }
-        });
+        } else {
+            alert('Ошибка при отправке данных');
+        }
     });
 });

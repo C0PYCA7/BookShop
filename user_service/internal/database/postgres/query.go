@@ -57,12 +57,12 @@ func (d *Database) CreateUser(user *model.UserRegistration) (int, error) {
 
 	fmt.Println("req in CreateUser", user)
 
-	query := `INSERT INTO users(name, surname, patronymic, mail, login, password)
-	VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`
+	query := `INSERT INTO users(name, surname, patronymic, mail, login, password, permissions)
+	VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`
 
 	var userId int
 
-	err := d.db.QueryRow(query, user.Name, user.Surname, user.Patronymic, user.Mail, user.Login, user.Password).Scan(&userId)
+	err := d.db.QueryRow(query, user.Name, user.Surname, user.Patronymic, user.Mail, user.Login, user.Password, "user").Scan(&userId)
 	if err != nil {
 		if err.(*pq.Error).Code == "23505" {
 			return 0, fmt.Errorf("%w", ErrLoginExists)
