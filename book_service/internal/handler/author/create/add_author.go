@@ -20,12 +20,17 @@ type CreateAuthor interface {
 	AddAuthor(author *model.AddAuthor) (int, error)
 }
 
+func NewAuthorPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "book_service/web/template/newauthor.html")
+}
+
 func New(log *slog.Logger, create CreateAuthor) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		var req model.AddAuthor
 
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
-			log.Error("failed to decode request body")
+			log.Error("failed to decode request body: ", err)
 
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,

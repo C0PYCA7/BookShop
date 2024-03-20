@@ -1,31 +1,43 @@
-const container = document.getElementById("container");
+const pathname = window.location.pathname;
+const pathParts = pathname.split('/');
+const id = pathParts[pathParts.length - 2]; // Get the ID from the URL
 
-const render = (data) => {
-    const html = `
-    <h1>${data.Name} ${data.Surname}</h1>
-    <p>Отчество: ${data.Patronymic}</p>
-    <p>Дата рождения: ${data.Birthday}</p>
-    <h2>Список книг:</h2>
-    <ul>
-      ${data.BookList.map((book) => `<li>${book}</li>`).join("")}
-    </ul>
-    <p>Статус: ${data.Status}</p>
-  `;
-    container.innerHTML = html;
-};
+if (id) {
+    fetch('/author/' + id)
+        .then(response => response.json())
+        .then(data => {
+            // Use the JSON data to populate the page
+            const authorDiv = document.createElement('div');
+            authorDiv.innerHTML = `
+        <h1>${data.author.name} ${data.author.surname}</h1>
+        <p>${data.author.patronymic}</p>
+        <p>${data.author.birthday}</p>
+        <ul>
+          ${data.author.BookList.map(book => `<li>${book}</li>`).join('')}
+        </ul>
+      `;
 
-const getData = async () => {
-    try {
-        const response = await fetch("YOUR_SERVER_URL/authors/<id>"); // Replace with your actual URL
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        render(data);
-    } catch (error) {
-        console.error("Error fetching data:", error);
-        // Handle error gracefully, e.g., display an error message to the user
-    }
-};
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Удалить автора';
+            deleteButton.addEventListener('click', () => {
+                if (confirm('Вы уверены, что хотите удалить этого автора?')) {
+                    fetch('/author/' + id, { method: 'DELETE' })
+                        .then(response => {
+                            if (response.ok) {
+                                alert('Автор удален');
+                                window.location.href = '/';
+                            } else {
+                                alert('Ошибка при удалении автора');
+                            }
+                        })
+                        .catch(error => console.error(error));
+                }
+            });
+            authorDiv.appendChild(deleteButton);
 
-getData();
+            document.body.appendChild(authorDiv);
+        })
+        .catch(error => console.error(error));
+} else {
+    console.error('Author ID not found in URL');
+}

@@ -10,17 +10,22 @@ import (
 )
 
 type Response struct {
-	model.AuthorInfo
-	Status int    `json:"status"`
-	Error  string `json:"error,omitempty"`
+	model.AuthorInfo `json:"author"`
+	Status           int    `json:"status"`
+	Error            string `json:"error,omitempty"`
 }
 
 type FindAuthor interface {
 	GetAuthor(id int) (*model.AuthorInfo, error)
 }
 
+func ServeAuthorPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "book_service/web/template/author.html")
+}
+
 func New(log *slog.Logger, find FindAuthor) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		idStr := chi.URLParam(r, "id")
 
 		id, err := strconv.Atoi(idStr)

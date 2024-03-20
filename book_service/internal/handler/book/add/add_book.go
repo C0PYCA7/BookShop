@@ -20,13 +20,17 @@ type Response struct {
 	Error  string `json:"error,omitempty"`
 }
 
+func NewBookPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "book_service/web/template/newbook.html")
+}
+
 func New(log *slog.Logger, book AddBook) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		var req model.AddBook
 
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
-			log.Error("failed to decode request body")
+			log.Error("failed to decode request body: ", err)
 
 			render.JSON(w, r, Response{Status: http.StatusBadRequest, Error: "failed to decode request body"})
 

@@ -19,6 +19,10 @@ type GetBook interface {
 	GetBookInfo(id int) (*model.BookInfo, error)
 }
 
+func ServeBookPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "book_service/web/template/book.html")
+}
+
 func New(log *slog.Logger, book GetBook) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := chi.URLParam(r, "id")

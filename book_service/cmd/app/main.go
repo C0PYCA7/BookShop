@@ -37,17 +37,22 @@ func main() {
 	fs := http.FileServer(http.Dir("book_service/web/static/js"))
 	router.Handle("/js/*", http.StripPrefix("/js", fs))
 
+	router.Get("/newauthor", create.NewAuthorPage)
 	router.Post("/newauthor", create.New(log, database))
 
-	router.Delete("/author/{id}", delete2.New(log, database))
+	router.Get("/author/{id}/page", check.ServeAuthorPage)
 	router.Get("/author/{id}", check.New(log, database))
+	router.Delete("/author/{id}", delete2.New(log, database))
 
+	router.Get("/book/{id}/page", get.ServeBookPage)
 	router.Get("/book/{id}", get.New(log, database))
 	router.Delete("/book/{id}", delete3.New(log, database))
 
+	router.Get("/newbook", add.NewBookPage)
 	router.Post("/newbook", add.New(log, database))
 
-	router.Get("/", list.New(log, database))
+	router.Get("/", list.ServeListPage)
+	router.Get("/list", list.New(log, database))
 	//todo: общая страничка со списком книг, создать, найти, удалить
 
 	_ = database

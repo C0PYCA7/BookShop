@@ -17,6 +17,10 @@ type Response struct {
 	Error  string       `json:"error,omitempty"`
 }
 
+func ServeListPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "book_service/web/template/list.html")
+}
+
 func New(log *slog.Logger, book ListBook) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		books, err := book.GelAllBooks()
