@@ -89,3 +89,19 @@ func (d *Database) DeleteUser(id int) error {
 	}
 	return nil
 }
+
+func (d *Database) UpdatePermission(login, permission string) error {
+	query := `UPDATE users SET permissions = $1 WHERE login = $2`
+	result, err := d.db.Exec(query, permission, login)
+	if err != nil {
+		return fmt.Errorf("failed to update permission: %w", ErrInternalServer)
+	}
+	count, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("count: %w", ErrInternalServer)
+	}
+	if count == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}

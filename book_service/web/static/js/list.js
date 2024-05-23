@@ -2,12 +2,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const addAuthorBtn = document.querySelector('#add-author-btn');
     const addBookBtn = document.querySelector('#add-book-btn');
 
+    // Получение токена из localStorage
+    const token = localStorage.getItem("Bearer")
+    alert("token from local storage: " + token)
+    // Функция для отправки запроса на защищенный роут с токеном в заголовке
+    const sendAuthenticatedRequest = (url) => {
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    // Если запрос успешен, перенаправляем пользователя на указанный URL
+                    window.location.href = url;
+                } else {
+                    // В случае ошибки обрабатываем ее
+                    console.error('Ошибка при отправке запроса:', response.statusText);
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка при отправке запроса:', error);
+            });
+    };
+
     addAuthorBtn.addEventListener('click', () => {
-        window.location.href = '/newauthor';
+        // Отправка запроса на страницу создания нового автора с токеном в заголовке
+        sendAuthenticatedRequest('/newauthor');
     });
 
     addBookBtn.addEventListener('click', () => {
-        window.location.href = '/newbook';
+        // Отправка запроса на страницу создания новой книги с токеном в заголовке
+        sendAuthenticatedRequest('/newbook');
     });
 
     fetch('/list')

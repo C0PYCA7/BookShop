@@ -1,6 +1,7 @@
 const pathname = window.location.pathname;
 const pathParts = pathname.split('/');
 const id = pathParts[pathParts.length - 2]; // Get the ID from the URL
+const token = localStorage.getItem("Bearer")
 
 if (id) {
     fetch('/book/' + id)
@@ -21,7 +22,7 @@ if (id) {
             const deleteButton = document.getElementById('delete');
             deleteButton.addEventListener('click', () => {
                 if (confirm('Вы действительно желаете удалить эту книгу?')) {
-                    fetch('/book/' + id, { method: 'DELETE' })
+                    fetch('/book/' + id, { method: 'DELETE' , headers: {'Authorization': 'Bearer '+ token}})
                         .then(response => {
                             if (response.ok) {
                                 alert('Книга удалена');

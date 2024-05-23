@@ -4,11 +4,14 @@ import (
 	"BookShop/user_service/internal/database/postgres"
 	"BookShop/user_service/internal/model"
 	"errors"
+	"fmt"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 	"log/slog"
 	"net/http"
+	"os"
+	"time"
 )
 
 type Request struct {
@@ -32,6 +35,13 @@ func RegistrationPage(w http.ResponseWriter, r *http.Request) {
 
 func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		file, err := os.OpenFile("data.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			log.Error("open file: ", slog.Any("err", err))
+		}
+		defer file.Close()
+
 		var req model.UserRegistration
 
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
@@ -93,6 +103,15 @@ func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 			return
 		}
 
+		date := time.Now().Format("2006-01-02 15:04:05")
+
+		data := fmt.Sprintf("REG: [%s] user:%s with id:%d registered successfully", date, req.Login, id)
+
+		_, err = fmt.Fprintf(file, data)
+		if err != nil {
+			log.Error("Failed to write file", slog.Any("data", data), slog.String("err", err.Error()))
+		}
+		_, _ = fmt.Fprintf(file, "\n")
 		render.JSON(w, r, Response{
 			Id:     id,
 			Status: http.StatusOK,

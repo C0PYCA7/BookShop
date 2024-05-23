@@ -10,6 +10,7 @@ import (
 	delete3 "BookShop/book_service/internal/handler/book/delete"
 	"BookShop/book_service/internal/handler/book/get"
 	"BookShop/book_service/internal/handler/book/list"
+	middleware2 "BookShop/book_service/internal/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
@@ -37,25 +38,26 @@ func main() {
 	fs := http.FileServer(http.Dir("book_service/web/static/js"))
 	router.Handle("/js/*", http.StripPrefix("/js", fs))
 
-	router.Get("/newauthor", create.NewAuthorPage)
-	router.Post("/newauthor", create.New(log, database))
+	router.Group(func(r chi.Router) {
+		r.Use(func(next http.Handler) http.Handler {
+			return middleware2.AuthMiddleware(next, cfg.Jwt)
+		})
+		r.Get("/newauthor", create.NewAuthorPage)
+		r.Post("/newauthor", create.New(log, database, cfg.Jwt))
+		r.Get("/author/{id}/page", check.ServeAuthorPage)
+		r.Get("/author/{id}", check.New(log, database))
+		r.Delete("/author/{id}", delete2.New(log, database, cfg.Jwt))
 
-	router.Get("/author/{id}/page", check.ServeAuthorPage)
-	router.Get("/author/{id}", check.New(log, database))
-	router.Delete("/author/{id}", delete2.New(log, database))
+		r.Get("/book/{id}/page", get.ServeBookPage)
+		r.Get("/book/{id}", get.New(log, database))
+		r.Delete("/book/{id}", delete3.New(log, database, cfg.Jwt))
 
-	router.Get("/book/{id}/page", get.ServeBookPage)
-	router.Get("/book/{id}", get.New(log, database))
-	router.Delete("/book/{id}", delete3.New(log, database))
-
-	router.Get("/newbook", add.NewBookPage)
-	router.Post("/newbook", add.New(log, database))
+		r.Get("/newbook", add.NewBookPage)
+		r.Post("/newbook", add.New(log, database, cfg.Jwt))
+	})
 
 	router.Get("/", list.ServeListPage)
 	router.Get("/list", list.New(log, database))
-	//todo: общая страничка со списком книг, создать, найти, удалить
-
-	_ = database
 
 	srv := &http.Server{
 		Addr:         cfg.HttpServer.Address,
@@ -64,6 +66,9 @@ func main() {
 		WriteTimeout: cfg.HttpServer.Timeout,
 		IdleTimeout:  cfg.HttpServer.IdleTimeout,
 	}
+
+	log.Info("server started on port: ", slog.String("address", cfg.HttpServer.Address))
+
 	if err := srv.ListenAndServe(); err != nil {
 		log.Error("failed to start server")
 	}

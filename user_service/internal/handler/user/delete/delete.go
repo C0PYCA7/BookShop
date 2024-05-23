@@ -21,6 +21,7 @@ type DeleteUser interface {
 
 func New(log *slog.Logger, user DeleteUser) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		userIdStr := chi.URLParam(r, "id")
 
 		if userIdStr == "" {

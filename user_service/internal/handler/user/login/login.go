@@ -5,11 +5,14 @@ import (
 	"BookShop/user_service/internal/database/postgres"
 	"BookShop/user_service/internal/lib/jwt"
 	"errors"
+	"fmt"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 	"log/slog"
 	"net/http"
+	"os"
+	"time"
 )
 
 type Request struct {
@@ -33,6 +36,13 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 
 func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		file, err := os.OpenFile("data.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			log.Error("open file: ", slog.Any("err", err))
+		}
+		defer file.Close()
+
 		var req Request
 
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
@@ -108,8 +118,22 @@ func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 			return
 		}
 
+		r.Header.Set("Authorization", "Bearer "+token)
+
+		date := time.Now().Format("2006-01-02 15:04:05")
+
+		data := fmt.Sprintf("AUTH: [%s] user:%s with id:%d logged in successfully", date, req.Login, id)
+
+		_, err = fmt.Fprintf(file, data)
+		if err != nil {
+			log.Error("Failed to write file", slog.Any("data", data), slog.String("err", err.Error()))
+		}
+		_, _ = fmt.Fprintf(file, "\n")
+
+		log.Info("token: ", r.Header.Get("Authorization"))
 		render.JSON(w, r, Response{Token: token,
 			Status: http.StatusOK,
 		})
+
 	}
 }

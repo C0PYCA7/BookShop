@@ -1,7 +1,7 @@
 const pathname = window.location.pathname;
 const pathParts = pathname.split('/');
 const id = pathParts[pathParts.length - 2]; // Get the ID from the URL
-
+const token = localStorage.getItem("Bearer")
 if (id) {
     fetch('/author/' + id)
         .then(response => response.json())
@@ -21,7 +21,7 @@ if (id) {
             deleteButton.textContent = 'Удалить автора';
             deleteButton.addEventListener('click', () => {
                 if (confirm('Вы уверены, что хотите удалить этого автора?')) {
-                    fetch('/author/' + id, { method: 'DELETE' })
+                    fetch('/author/' + id, { method: 'DELETE' , headers: {'Authorization': 'Bearer '+ token}})
                         .then(response => {
                             if (response.ok) {
                                 alert('Автор удален');

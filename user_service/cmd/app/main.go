@@ -3,7 +3,6 @@ package main
 import (
 	"BookShop/user_service/internal/config"
 	"BookShop/user_service/internal/database/postgres"
-	delete2 "BookShop/user_service/internal/handler/user/delete"
 	"BookShop/user_service/internal/handler/user/login"
 	"BookShop/user_service/internal/handler/user/registration"
 	"github.com/go-chi/chi/v5"
@@ -19,7 +18,7 @@ func main() {
 
 	database, err := postgres.New(cfg.Database)
 	if err != nil {
-		log.Error("failed to init database: ", err)
+		log.Error("init database: ", err)
 		os.Exit(1)
 	}
 
@@ -29,14 +28,15 @@ func main() {
 	router.Use(middleware.Logger)
 	router.Use(middleware.Recoverer)
 
-	fs := http.FileServer(http.Dir("user_service/web/static/js"))
-	router.Handle("/js/*", http.StripPrefix("/js", fs))
+	fs := http.FileServer(http.Dir("user_service/web/static/jss"))
+	router.Handle("/jss/*", http.StripPrefix("/jss", fs))
 
 	router.Get("/login", login.LoginPage)
 	router.Post("/login", login.New(log, database, cfg.Jwt))
 	router.Get("/registration", registration.RegistrationPage)
 	router.Post("/registration", registration.New(log, database))
-	router.Delete("/user/{id}", delete2.New(log, database))
+
+	router.Group(func(router chi.Router) {})
 
 	srv := &http.Server{
 		Addr:         cfg.HttpServer.Address,
@@ -46,7 +46,8 @@ func main() {
 		IdleTimeout:  cfg.HttpServer.IdleTimeout,
 	}
 	if err := srv.ListenAndServe(); err != nil {
-		log.Error("failed to start server")
+		log.Error("start server: ", err)
+		os.Exit(1)
 	}
 
 	log.Error("server is stopped")

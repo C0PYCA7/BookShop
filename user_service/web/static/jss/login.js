@@ -29,7 +29,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }).then((data) => {
             if (data.status === 200) {
                 alert('Данные доставлены');
-                window.location.href = 'http://localhost:8080/'; // перенаправление на главную страницу
+                localStorage.setItem("Bearer", data.token)
+                const tok = localStorage.getItem("Bearer")
+                alert("token from local storage: " + tok)
+                window.location.href = '/'; // перенаправление на главную страницу
             } else {
                 alert(data.error); // вывод сообщения об ошибке
             }
