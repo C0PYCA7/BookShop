@@ -1,0 +1,318 @@
+{
+  "$schema": "https://www.krakend.io/schema/krakend.json",
+  "version": 3,
+  "name": "KrakenD - API Gateway",
+  "timeout": "30000ms",
+  "cache_ttl": "300s",
+  "output_encoding": "no-op",
+  "port": 8003,
+  "endpoints": [
+    {
+      "endpoint": "/js/{path}",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/js/{path}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/jss/{path}",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/jss/{path}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8081"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/login",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/login",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
+          "host": ["localhost:8081"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/login",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/login",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8081"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/registration",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/registration",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8081"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/registration",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/registration",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
+          "host": ["localhost:8081"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/update",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/update",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
+          "host": ["localhost:8081"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/update",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/update",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8081"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/newauthor",
+      "input_headers": ["Authorization"],
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/newauthor",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/newauthor",
+      "input_headers": ["Authorization"],
+      "method": "POST",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/newauthor",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/author/{id}",
+      "input_headers": ["Authorization"],
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/author/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/author/{id}/page",
+      "input_headers": ["Authorization"],
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/author/{id}/page",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/author/{id}",
+      "input_headers": ["Authorization"],
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/author/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "DELETE",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/book/{id}",
+      "input_headers": ["Authorization"],
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/book/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/book/{id}/page",
+      "input_headers": ["Authorization"],
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/book/{id}/page",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/book/{id}",
+      "input_headers": ["Authorization"],
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/book/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "DELETE",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/newbook",
+      "input_headers": ["Authorization"],
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/newbook",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/newbook",
+      "input_headers": ["Authorization"],
+      "method": "POST",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/newbook",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/list",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/list",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8082"],
+          "disable_host_sanitize": false
+        }
+      ]
+    }
+  ]
+}
