@@ -97,21 +97,7 @@
     },
     {
       "endpoint": "/update",
-      "method": "POST",
-      "output_encoding": "no-op",
-      "backend": [
-        {
-          "url_pattern": "/update",
-          "encoding": "no-op",
-          "sd": "static",
-          "method": "POST",
-          "host": ["localhost:8081"],
-          "disable_host_sanitize": false
-        }
-      ]
-    },
-    {
-      "endpoint": "/update",
+      "input_headers": ["Authorization"],
       "method": "GET",
       "output_encoding": "no-op",
       "backend": [
@@ -120,6 +106,22 @@
           "encoding": "no-op",
           "sd": "static",
           "method": "GET",
+          "host": ["localhost:8081"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/update",
+      "input_headers": ["Authorization"],
+      "method": "POST",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/update",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
           "host": ["localhost:8081"],
           "disable_host_sanitize": false
         }
@@ -189,22 +191,6 @@
       ]
     },
     {
-      "endpoint": "/author/{id}",
-      "input_headers": ["Authorization"],
-      "method": "DELETE",
-      "output_encoding": "no-op",
-      "backend": [
-        {
-          "url_pattern": "/author/{id}",
-          "encoding": "no-op",
-          "sd": "static",
-          "method": "DELETE",
-          "host": ["localhost:8082"],
-          "disable_host_sanitize": false
-        }
-      ]
-    },
-    {
       "endpoint": "/book/{id}",
       "input_headers": ["Authorization"],
       "method": "GET",
@@ -231,22 +217,6 @@
           "encoding": "no-op",
           "sd": "static",
           "method": "GET",
-          "host": ["localhost:8082"],
-          "disable_host_sanitize": false
-        }
-      ]
-    },
-    {
-      "endpoint": "/book/{id}",
-      "input_headers": ["Authorization"],
-      "method": "DELETE",
-      "output_encoding": "no-op",
-      "backend": [
-        {
-          "url_pattern": "/book/{id}",
-          "encoding": "no-op",
-          "sd": "static",
-          "method": "DELETE",
           "host": ["localhost:8082"],
           "disable_host_sanitize": false
         }

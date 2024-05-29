@@ -41,11 +41,17 @@ func New(log *slog.Logger, create CreateAuthor, cfg config.JwtConfig) http.Handl
 		}
 		defer file.Close()
 
+		logFile, err := os.OpenFile("logs.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			log.Error("open file: ", slog.Any("err", err))
+		}
+		defer logFile.Close()
+
 		var req model.AddAuthor
 
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			log.Error("failed to decode request body: ", err)
-
+			_, err = fmt.Fprintln(logFile, "NEWAUTHOR invalid request body")
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "failed to decode request body",
@@ -58,7 +64,7 @@ func New(log *slog.Logger, create CreateAuthor, cfg config.JwtConfig) http.Handl
 
 		if err := validator.New().Struct(req); err != nil {
 			log.Error("invalid request")
-
+			_, err = fmt.Fprintln(logFile, "NEWAUTHOR invalid request")
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "Invalid request",
@@ -73,7 +79,7 @@ func New(log *slog.Logger, create CreateAuthor, cfg config.JwtConfig) http.Handl
 		if err != nil {
 			if errors.Is(err, postgres.ErrAuthorExists) {
 				log.Error("author exists")
-
+				_, err = fmt.Fprintln(logFile, fmt.Sprintf("NEWAUTHOR author exists: %s %s", req.Name, req.Surname))
 				render.JSON(w, r, Response{
 					Status: http.StatusConflict,
 					Error:  "author exists",
@@ -83,7 +89,7 @@ func New(log *slog.Logger, create CreateAuthor, cfg config.JwtConfig) http.Handl
 			}
 
 			log.Error("failed to add author")
-
+			_, err = fmt.Fprintln(logFile, fmt.Sprintf("NEWAUTHOR failed to add author: %s %s", req.Name, req.Surname))
 			render.JSON(w, r, Response{
 				Status: http.StatusInternalServerError,
 				Error:  "internal server error",

@@ -30,7 +30,7 @@ type Response struct {
 }
 
 func ShowPage(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "user_service/web/template/login.html")
+	http.ServeFile(w, r, "user_service/web/template/update.html")
 }
 
 func New(log *slog.Logger, updater Updater, cfg config.JwtConfig) http.HandlerFunc {
@@ -42,11 +42,17 @@ func New(log *slog.Logger, updater Updater, cfg config.JwtConfig) http.HandlerFu
 		}
 		defer file.Close()
 
+		logFile, err := os.OpenFile("logs.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			log.Error("open file: ", slog.Any("err", err))
+		}
+		defer logFile.Close()
+
 		var req Request
 
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			log.Error("Failed to decode request body")
-
+			_, err = fmt.Fprintln(logFile, "UPDATE Failed to decode request body")
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "Failed to decode request body",
@@ -59,7 +65,7 @@ func New(log *slog.Logger, updater Updater, cfg config.JwtConfig) http.HandlerFu
 
 		if err := validator.New().Struct(req); err != nil {
 			log.Error("invalid request")
-
+			_, err = fmt.Fprintln(logFile, "UPDATE invalid request")
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "Invalid request",
@@ -71,7 +77,7 @@ func New(log *slog.Logger, updater Updater, cfg config.JwtConfig) http.HandlerFu
 		if err != nil {
 			if errors.Is(err, postgres.ErrUserNotFound) {
 				log.Error("User not found")
-
+				_, err = fmt.Fprintln(logFile, fmt.Sprintf("UPDATE User not found: %s", req.Login))
 				render.JSON(w, r, Response{
 					Status: http.StatusNotFound,
 					Error:  "User not found",
@@ -79,7 +85,7 @@ func New(log *slog.Logger, updater Updater, cfg config.JwtConfig) http.HandlerFu
 				return
 			}
 			log.Error("Failed to update user")
-
+			_, err = fmt.Fprintln(logFile, fmt.Sprintf("UPDATE Failed to update user: %s", req.Login))
 			render.JSON(w, r, Response{
 				Status: http.StatusInternalServerError,
 				Error:  "Failed to update user",
@@ -98,8 +104,13 @@ func New(log *slog.Logger, updater Updater, cfg config.JwtConfig) http.HandlerFu
 		_, err = fmt.Fprintf(file, data)
 		if err != nil {
 			log.Error("Failed to write file", slog.Any("data", data), slog.String("err", err.Error()))
+			_, err = fmt.Fprintln(logFile, "UPDATE Failed to write file")
 		}
 		_, _ = fmt.Fprintf(file, "\n")
+
+		render.JSON(w, r, Response{
+			Status: http.StatusOK,
+		})
 
 	}
 }

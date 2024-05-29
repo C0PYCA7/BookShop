@@ -5,6 +5,8 @@ import (
 	"BookShop/user_service/internal/database/postgres"
 	"BookShop/user_service/internal/handler/user/login"
 	"BookShop/user_service/internal/handler/user/registration"
+	"BookShop/user_service/internal/handler/user/update"
+	middleware3 "BookShop/user_service/internal/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
@@ -35,6 +37,14 @@ func main() {
 	router.Post("/login", login.New(log, database, cfg.Jwt))
 	router.Get("/registration", registration.RegistrationPage)
 	router.Post("/registration", registration.New(log, database))
+
+	router.Group(func(router chi.Router) {
+		router.Use(func(next http.Handler) http.Handler {
+			return middleware3.AuthMiddleware(next, cfg.Jwt)
+		})
+		router.Get("/update", update.ShowPage)
+		router.Post("/update", update.New(log, database, cfg.Jwt))
+	})
 
 	router.Group(func(router chi.Router) {})
 

@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const addAuthorBtn = document.querySelector('#add-author-btn');
     const addBookBtn = document.querySelector('#add-book-btn');
-
+    const updateBtn = document.querySelector('#update-permission')
+    const logoutBtn = document.querySelector('#logout')
     // Получение токена из localStorage
     const token = localStorage.getItem("Bearer")
     alert("token from local storage: " + token)
@@ -14,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
             .then(response => {
+                if (response.status === 403){
+                    alert("Недостаточно прав")
+                }
                 if (response.ok) {
                     // Если запрос успешен, перенаправляем пользователя на указанный URL
                     window.location.href = url;
@@ -36,6 +40,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Отправка запроса на страницу создания новой книги с токеном в заголовке
         sendAuthenticatedRequest('/newbook');
     });
+
+    updateBtn.addEventListener('click', () => {
+        sendAuthenticatedRequest('/update')
+    })
+
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('Bearer')
+        alert("Вы вышли из системы")
+        window.location.href = '/login'
+    })
 
     fetch('/list')
         .then(response => response.json())

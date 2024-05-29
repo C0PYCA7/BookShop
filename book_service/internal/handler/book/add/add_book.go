@@ -39,11 +39,17 @@ func New(log *slog.Logger, book AddBook, cfg config.JwtConfig) http.HandlerFunc 
 		}
 		defer file.Close()
 
+		logFile, err := os.OpenFile("logs.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			log.Error("open file: ", slog.Any("err", err))
+		}
+		defer logFile.Close()
+
 		var req model.AddBook
 
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			log.Error("failed to decode request body: ", err)
-
+			_, err = fmt.Fprintln(logFile, "invalid request body")
 			render.JSON(w, r, Response{Status: http.StatusBadRequest, Error: "failed to decode request body"})
 
 			return
@@ -53,7 +59,7 @@ func New(log *slog.Logger, book AddBook, cfg config.JwtConfig) http.HandlerFunc 
 
 		if err := validator.New().Struct(&req); err != nil {
 			log.Error("invalid request")
-
+			_, err = fmt.Fprintln(logFile, "NEWBOOK invalid request body")
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "Invalid request",
@@ -67,7 +73,7 @@ func New(log *slog.Logger, book AddBook, cfg config.JwtConfig) http.HandlerFunc 
 		if err != nil {
 			if errors.Is(err, postgres.ErrAuthorNotFound) {
 				log.Error("author not found")
-
+				_, err = fmt.Fprintln(logFile, fmt.Sprintf("NEWBOOK author %s not found ", req.Author))
 				render.JSON(w, r, Response{Status: http.StatusNotFound, Error: "author not found"})
 
 				return
@@ -89,6 +95,7 @@ func New(log *slog.Logger, book AddBook, cfg config.JwtConfig) http.HandlerFunc 
 		_, err = fmt.Fprintf(file, data)
 		if err != nil {
 			log.Error("Failed to write file", slog.Any("data", data), slog.String("err", err.Error()))
+			_, err = fmt.Fprintln(logFile, "NEWBOOK Failed to write file")
 		}
 		_, _ = fmt.Fprintf(file, "\n")
 

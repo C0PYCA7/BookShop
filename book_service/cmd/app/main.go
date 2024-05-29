@@ -5,9 +5,7 @@ import (
 	"BookShop/book_service/internal/database/postgres"
 	"BookShop/book_service/internal/handler/author/check"
 	"BookShop/book_service/internal/handler/author/create"
-	delete2 "BookShop/book_service/internal/handler/author/delete"
 	"BookShop/book_service/internal/handler/book/add"
-	delete3 "BookShop/book_service/internal/handler/book/delete"
 	"BookShop/book_service/internal/handler/book/get"
 	"BookShop/book_service/internal/handler/book/list"
 	middleware2 "BookShop/book_service/internal/middleware"
@@ -46,11 +44,9 @@ func main() {
 		r.Post("/newauthor", create.New(log, database, cfg.Jwt))
 		r.Get("/author/{id}/page", check.ServeAuthorPage)
 		r.Get("/author/{id}", check.New(log, database))
-		r.Delete("/author/{id}", delete2.New(log, database, cfg.Jwt))
 
 		r.Get("/book/{id}/page", get.ServeBookPage)
 		r.Get("/book/{id}", get.New(log, database))
-		r.Delete("/book/{id}", delete3.New(log, database, cfg.Jwt))
 
 		r.Get("/newbook", add.NewBookPage)
 		r.Post("/newbook", add.New(log, database, cfg.Jwt))

@@ -2,3 +2,21 @@ REG: [2024-05-15 12:45:26] user:r with id:7 registered successfully
 AUTH: [2024-05-15 12:46:00] user:r with id:7 logged in successfully
 AUTH: [2024-05-15 12:46:19] user: with id:7 create author:10
 AUTH: [2024-05-15 12:47:37] user: with id:7 create author:4
+AUTH: [2024-05-29 14:08:39] user:aboba with id:4 logged in successfully
+AUTH: [2024-05-29 15:49:12] user:aboba with id:4 logged in successfully
+UPDATE: [2024-05-29 15:49:53] s's permission updated to admin, by user with id:4
+AUTH: [2024-05-29 16:49:09] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 16:56:14] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 17:05:24] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 17:07:08] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 17:09:34] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 17:10:56] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 17:14:39] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 17:19:01] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 17:34:24] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 17:35:53] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 17:39:16] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 18:07:18] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 18:29:09] user:e with id:6 logged in successfully
+AUTH: [2024-05-29 18:30:43] user:aboba with id:4 logged in successfully
+UPDATE: [2024-05-29 18:30:53] e's permission updated to admin, by user with id:4

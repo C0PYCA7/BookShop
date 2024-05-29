@@ -37,17 +37,25 @@ func LoginPage(w http.ResponseWriter, r *http.Request) {
 func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		date := time.Now().Format("2006-01-02 15:04:05")
+
 		file, err := os.OpenFile("data.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 		if err != nil {
 			log.Error("open file: ", slog.Any("err", err))
 		}
 		defer file.Close()
 
+		logFile, err := os.OpenFile("logs.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			log.Error("open file: ", slog.Any("err", err))
+		}
+		defer logFile.Close()
+
 		var req Request
 
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			log.Error("failed to decode request body")
-
+			_, err = fmt.Fprintln(logFile, "AUTH failed to decode request body")
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "Failed to decode request body",
@@ -60,7 +68,7 @@ func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 
 		if err := validator.New().Struct(req); err != nil {
 			log.Error("invalid request")
-
+			_, err = fmt.Fprintln(logFile, "AUTH invalid request")
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "Invalid request",
@@ -73,7 +81,7 @@ func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 		if err != nil {
 			if errors.Is(err, postgres.ErrUserNotFound) {
 				log.Error("Error", postgres.ErrUserNotFound)
-
+				_, err = fmt.Fprintln(logFile, fmt.Sprintf("AUTH user not found: %s", req.Login))
 				render.JSON(w, r, Response{
 					Status: http.StatusNotFound,
 					Error:  "User not found",
@@ -83,7 +91,7 @@ func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 			}
 
 			log.Error("Error", postgres.ErrInternalServer)
-
+			_, err = fmt.Fprintln(logFile, fmt.Sprintf("AUTH internal server error: %s", req.Login))
 			render.JSON(w, r, Response{
 				Status: http.StatusInternalServerError,
 				Error:  "Internal server error",
@@ -93,8 +101,8 @@ func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 		}
 
 		if err := bcrypt.CompareHashAndPassword([]byte(passBd), []byte(req.Password)); err != nil {
-			log.Error("Invalid data")
-
+			log.Error("invalid data")
+			_, err = fmt.Fprintln(logFile, fmt.Sprintf("AUTH invalid data: %s", req.Login))
 			render.JSON(w, r, Response{
 				Status: http.StatusNotFound,
 				Error:  "Invalid data",
@@ -109,7 +117,7 @@ func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 		if err != nil {
 
 			log.Error("Internal server error")
-
+			_, err = fmt.Fprintln(logFile, fmt.Sprintf("AUTH internal server error: %s", req.Login))
 			render.JSON(w, r, Response{
 				Status: http.StatusInternalServerError,
 				Error:  "Internal server error",
@@ -119,8 +127,6 @@ func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 		}
 
 		r.Header.Set("Authorization", "Bearer "+token)
-
-		date := time.Now().Format("2006-01-02 15:04:05")
 
 		data := fmt.Sprintf("AUTH: [%s] user:%s with id:%d logged in successfully", date, req.Login, id)
 

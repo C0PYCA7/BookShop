@@ -23,6 +23,26 @@ func NewToken(id int, permission string, cfg config.JwtConfig) (string, error) {
 	return tokenString, nil
 }
 
+func Verify(tokenString string, config config.JwtConfig) (bool, bool) {
+	secretKey := []byte(config.SecretKey)
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return secretKey, nil
+	})
+	if err != nil {
+		return false, false
+	}
+
+	if !token.Valid {
+		return false, false
+	}
+	claims := token.Claims.(jwt.MapClaims)
+	permission := claims["permission"].(string)
+	if permission != "admin" {
+		return true, false
+	}
+	return true, true
+}
+
 func GetData(tokenString string, config config.JwtConfig) string {
 	secretKey := []byte(config.SecretKey)
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {

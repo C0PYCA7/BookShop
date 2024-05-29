@@ -42,11 +42,17 @@ func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 		}
 		defer file.Close()
 
+		logFile, err := os.OpenFile("logs.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			log.Error("open file: ", slog.Any("err", err))
+		}
+		defer logFile.Close()
+
 		var req model.UserRegistration
 
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
 			log.Error("Failed to decode request body")
-
+			_, err = fmt.Fprintln(logFile, "REG failed to decode request body")
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "Failed to decode request body",
@@ -59,7 +65,7 @@ func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 
 		if err := validator.New().Struct(req); err != nil {
 			log.Error("invalid request")
-
+			_, err = fmt.Fprintln(logFile, "REG failed to decode request body")
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "Invalid request",
@@ -70,7 +76,7 @@ func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 		password, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
 			log.Error("failed to hash password")
-
+			_, err = fmt.Fprintln(logFile, "REG failed to hash password")
 			render.JSON(w, r, Response{
 				Status: http.StatusInternalServerError,
 				Error:  "Internal server error",
@@ -85,7 +91,7 @@ func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 		if err != nil {
 			if errors.Is(err, postgres.ErrLoginExists) {
 				log.Info("login exists")
-
+				_, err = fmt.Fprintln(logFile, "REG failed to register user")
 				render.JSON(w, r, Response{
 					Status: http.StatusConflict,
 					Error:  "Login exists",
@@ -110,6 +116,7 @@ func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 		_, err = fmt.Fprintf(file, data)
 		if err != nil {
 			log.Error("Failed to write file", slog.Any("data", data), slog.String("err", err.Error()))
+			_, err = fmt.Fprintln(file, "REG failed to write in file data")
 		}
 		_, _ = fmt.Fprintf(file, "\n")
 		render.JSON(w, r, Response{
