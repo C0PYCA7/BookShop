@@ -2,7 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('#newauthor');
 
     const token = localStorage.getItem("Bearer")
-    alert("token from local storage: " + token)
 
     function formatDate(date) {
         const year = date.getFullYear();
@@ -42,11 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (response.ok) {
             const data = await response.json();
 
-            console.log(data)
-
             if (data.status === 200) {
                 alert('Данные доставлены');
-                window.location.href = '/'; // перенаправление на главную страницу
+                window.location.href = '/';
             } else {
                 alert('Ошибка при отправке данных');
             }

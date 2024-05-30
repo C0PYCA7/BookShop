@@ -18,7 +18,6 @@ type Request struct {
 	model.UserRegistration
 }
 
-// todo - наверное убрать Id из Response
 type Response struct {
 	Id     int    `json:"id"`
 	Status int    `json:"status"`
@@ -61,8 +60,6 @@ func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 			return
 		}
 
-		log.Info("Request decoded ", req)
-
 		if err := validator.New().Struct(req); err != nil {
 			log.Error("invalid request")
 			_, err = fmt.Fprintln(logFile, "REG failed to decode request body")
@@ -86,6 +83,32 @@ func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 		}
 
 		req.Password = string(password)
+
+		dateStr := time.Now().Format("2006-01-02 15:04:05")
+
+		dateTime, err := time.Parse("2006-01-02 15:04:05", dateStr)
+		if err != nil {
+			log.Error("failed to parse date")
+			_, err = fmt.Fprintln(logFile, "REG failed to parse date")
+		}
+
+		birthday := req.Birthday.Year()
+		log.Info("birhday", birthday)
+		dateYear := dateTime.Year()
+		log.Info("dateYear", dateYear)
+		age := dateYear - birthday
+		log.Info("age", age)
+
+		if age < 14 {
+			log.Info("age is less than 14")
+			_, err = fmt.Fprintln(file, fmt.Sprintf("REG user with name %s and surname %s try to registration but age is les then 14", req.Name, req.Surname))
+
+			render.JSON(w, r, Response{
+				Status: http.StatusBadRequest,
+				Error:  "Age is less than 14",
+			})
+			return
+		}
 
 		id, err := create.CreateUser(&req)
 		if err != nil {
@@ -119,6 +142,7 @@ func New(log *slog.Logger, create CreateUser) http.HandlerFunc {
 			_, err = fmt.Fprintln(file, "REG failed to write in file data")
 		}
 		_, _ = fmt.Fprintf(file, "\n")
+		_, _ = fmt.Fprintln(logFile, fmt.Sprintf("REG create user with id: %d", id))
 		render.JSON(w, r, Response{
 			Id:     id,
 			Status: http.StatusOK,

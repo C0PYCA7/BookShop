@@ -88,23 +88,6 @@ func (d *Database) AddAuthor(author *model.AddAuthor) (int, error) {
 	return authorId, nil
 }
 
-func (d *Database) DelAuthor(id int) error {
-	query := `DELETE FROM author WHERE id = $1`
-
-	result, err := d.db.Exec(query, id)
-	if err != nil {
-		return fmt.Errorf("failed to delete author: %w", ErrInternalServer)
-	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return ErrInternalServer
-	}
-	if rows == 0 {
-		return fmt.Errorf("%w", ErrAuthorNotFound)
-	}
-	return nil
-}
-
 func (d *Database) GetAuthor(id int) (*model.AuthorInfo, error) {
 	tx, err := d.db.Begin()
 	if err != nil {
@@ -144,23 +127,6 @@ func (d *Database) GetAuthor(id int) (*model.AuthorInfo, error) {
 	return &author, nil
 }
 
-func (d *Database) DelBook(id int) error {
-	query := `DELETE FROM book WHERE id = $1`
-
-	result, err := d.db.Exec(query, id)
-	if err != nil {
-		return fmt.Errorf("failed to delete book: %w", ErrInternalServer)
-	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return ErrInternalServer
-	}
-	if rows == 0 {
-		return fmt.Errorf("%w", ErrBookNotFound)
-	}
-	return nil
-}
-
 func (d *Database) GetBookInfo(id int) (*model.BookInfo, error) {
 
 	query := `SELECT book.name, book.genre, EXTRACT(YEAR FROM book.date) AS year, book.price,
@@ -181,18 +147,31 @@ func (d *Database) GetBookInfo(id int) (*model.BookInfo, error) {
 }
 
 func (d *Database) GelAllBooks() ([]model.Book, error) {
-	query := `SELECT name, genre, price FROM book`
+	query := `SELECT 
+    			book.name AS book_name, 
+    			book.genre, 
+ 				book.price, 
+    			author.name AS author_name, 
+    			author.surname AS author_surname 
+					FROM 
+    					book
+					JOIN 
+    					author 
+					ON 
+    					author.id = book.id_author;
+`
 
 	var books []model.Book
 
 	rows, err := d.db.Query(query)
 	if err != nil {
+		fmt.Println(err)
 		return nil, fmt.Errorf("failed to get books: %w", ErrInternalServer)
 	}
 
 	for rows.Next() {
 		var book model.Book
-		if err := rows.Scan(&book.Name, &book.Genre, &book.Price); err != nil {
+		if err := rows.Scan(&book.Name, &book.Genre, &book.Price, &book.AuthorName, &book.AuthorSurname); err != nil {
 			return nil, fmt.Errorf("failed to get all books from rows: %w", ErrInternalServer)
 		}
 		books = append(books, book)

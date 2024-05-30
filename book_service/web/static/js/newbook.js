@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('#newbook');
 
     const token = localStorage.getItem("Bearer")
-    alert(token)
+
     function formatDate(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');

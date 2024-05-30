@@ -60,8 +60,6 @@ func New(log *slog.Logger, create CreateAuthor, cfg config.JwtConfig) http.Handl
 			return
 		}
 
-		log.Info("decoded: ", req)
-
 		if err := validator.New().Struct(req); err != nil {
 			log.Error("invalid request")
 			_, err = fmt.Fprintln(logFile, "NEWAUTHOR invalid request")
@@ -113,6 +111,7 @@ func New(log *slog.Logger, create CreateAuthor, cfg config.JwtConfig) http.Handl
 		_, _ = fmt.Fprintf(file, "\n")
 
 		log.Info("add author ", id)
+		_, err = fmt.Fprintln(logFile, fmt.Sprintf("NEWAUTHOR with id %d created", id))
 
 		render.JSON(w, r, Response{
 			Id:     id,

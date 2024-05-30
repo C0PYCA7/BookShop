@@ -6,6 +6,13 @@
   "cache_ttl": "300s",
   "output_encoding": "no-op",
   "port": 8003,
+  "extra_config": {
+    "security/cors": {
+      "allow_origins": ["*"],
+      "allow_methods": ["GET", "POST", "DELETE"],
+      "allow_headers": ["Authorization"]
+    }
+  },
   "endpoints": [
     {
       "endpoint": "/js/{path}",
@@ -122,6 +129,38 @@
           "encoding": "no-op",
           "sd": "static",
           "method": "POST",
+          "host": ["localhost:8081"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/delete",
+      "input_headers": ["Authorization"],
+      "method": "GET",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/delete",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "host": ["localhost:8081"],
+          "disable_host_sanitize": false
+        }
+      ]
+    },
+    {
+      "endpoint": "/delete",
+      "input_headers": ["Authorization"],
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/delete",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "DELETE",
           "host": ["localhost:8081"],
           "disable_host_sanitize": false
         }

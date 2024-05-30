@@ -64,8 +64,6 @@ func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 			return
 		}
 
-		log.Info("request body decoded: ", req)
-
 		if err := validator.New().Struct(req); err != nil {
 			log.Error("invalid request")
 			_, err = fmt.Fprintln(logFile, "AUTH invalid request")
@@ -125,8 +123,6 @@ func New(log *slog.Logger, logIn LogIn, cfg config.JwtConfig) http.HandlerFunc {
 
 			return
 		}
-
-		r.Header.Set("Authorization", "Bearer "+token)
 
 		data := fmt.Sprintf("AUTH: [%s] user:%s with id:%d logged in successfully", date, req.Login, id)
 

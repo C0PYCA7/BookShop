@@ -1,8 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('#log')
+    const regBtn = document.querySelector('#reg')
+
+    regBtn.addEventListener('click', () => {
+        window.location.href = '/registration'
+    })
 
     form.addEventListener('submit', (event) => {
-        event.preventDefault(); // отмена стандартного поведения формы
+        event.preventDefault();
 
         const login = document.querySelector('#login').value
         const password = document.querySelector('#password').value
@@ -31,10 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Данные доставлены');
                 localStorage.setItem("Bearer", data.token)
                 const tok = localStorage.getItem("Bearer")
-                alert("token from local storage: " + tok)
-                window.location.href = '/'; // перенаправление на главную страницу
+                window.location.href = '/';
             } else {
-                alert(data.error); // вывод сообщения об ошибке
+                alert(data.error);
             }
         }).catch((error) => {
             console.error('There was a problem with the fetch operation:', error);

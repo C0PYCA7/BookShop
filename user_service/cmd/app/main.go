@@ -3,6 +3,7 @@ package main
 import (
 	"BookShop/user_service/internal/config"
 	"BookShop/user_service/internal/database/postgres"
+	delete2 "BookShop/user_service/internal/handler/user/delete"
 	"BookShop/user_service/internal/handler/user/login"
 	"BookShop/user_service/internal/handler/user/registration"
 	"BookShop/user_service/internal/handler/user/update"
@@ -44,9 +45,9 @@ func main() {
 		})
 		router.Get("/update", update.ShowPage)
 		router.Post("/update", update.New(log, database, cfg.Jwt))
+		router.Get("/delete", delete2.ShowPage)
+		router.Delete("/delete", delete2.New(log, database, cfg.Jwt))
 	})
-
-	router.Group(func(router chi.Router) {})
 
 	srv := &http.Server{
 		Addr:         cfg.HttpServer.Address,
@@ -55,6 +56,9 @@ func main() {
 		WriteTimeout: cfg.HttpServer.Timeout,
 		IdleTimeout:  cfg.HttpServer.IdleTimeout,
 	}
+
+	log.Info("server started on port: ", slog.String("address", cfg.HttpServer.Address))
+
 	if err := srv.ListenAndServe(); err != nil {
 		log.Error("start server: ", err)
 		os.Exit(1)

@@ -3,10 +3,8 @@ package main
 import (
 	"BookShop/book_service/internal/config"
 	"BookShop/book_service/internal/database/postgres"
-	"BookShop/book_service/internal/handler/author/check"
 	"BookShop/book_service/internal/handler/author/create"
 	"BookShop/book_service/internal/handler/book/add"
-	"BookShop/book_service/internal/handler/book/get"
 	"BookShop/book_service/internal/handler/book/list"
 	middleware2 "BookShop/book_service/internal/middleware"
 	"github.com/go-chi/chi/v5"
@@ -42,11 +40,6 @@ func main() {
 		})
 		r.Get("/newauthor", create.NewAuthorPage)
 		r.Post("/newauthor", create.New(log, database, cfg.Jwt))
-		r.Get("/author/{id}/page", check.ServeAuthorPage)
-		r.Get("/author/{id}", check.New(log, database))
-
-		r.Get("/book/{id}/page", get.ServeBookPage)
-		r.Get("/book/{id}", get.New(log, database))
 
 		r.Get("/newbook", add.NewBookPage)
 		r.Post("/newbook", add.New(log, database, cfg.Jwt))

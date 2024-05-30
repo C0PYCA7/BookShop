@@ -57,12 +57,12 @@ func (d *Database) CreateUser(user *model.UserRegistration) (int, error) {
 
 	fmt.Println("req in CreateUser", user)
 
-	query := `INSERT INTO users(name, surname, patronymic, mail, login, password, permissions)
-	VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`
+	query := `INSERT INTO users(name, surname, patronymic, mail, login, password, permissions, age)
+	VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`
 
 	var userId int
 
-	err := d.db.QueryRow(query, user.Name, user.Surname, user.Patronymic, user.Mail, user.Login, user.Password, "user").Scan(&userId)
+	err := d.db.QueryRow(query, user.Name, user.Surname, user.Patronymic, user.Mail, user.Login, user.Password, "user", user.Birthday).Scan(&userId)
 	if err != nil {
 		if err.(*pq.Error).Code == "23505" {
 			return 0, fmt.Errorf("%w", ErrLoginExists)
@@ -71,23 +71,6 @@ func (d *Database) CreateUser(user *model.UserRegistration) (int, error) {
 	}
 
 	return userId, nil
-}
-
-func (d *Database) DeleteUser(id int) error {
-	query := `DELETE FROM users WHERE id = $1`
-
-	result, err := d.db.Exec(query, id)
-	if err != nil {
-		return fmt.Errorf("failed to delete user: %w", ErrInternalServer)
-	}
-	rows, err := result.RowsAffected()
-	if err != nil {
-		return ErrInternalServer
-	}
-	if rows == 0 {
-		return fmt.Errorf("%w", ErrUserNotFound)
-	}
-	return nil
 }
 
 func (d *Database) UpdatePermission(login, permission string) error {
@@ -101,6 +84,22 @@ func (d *Database) UpdatePermission(login, permission string) error {
 		return fmt.Errorf("count: %w", ErrInternalServer)
 	}
 	if count == 0 {
+		return ErrUserNotFound
+	}
+	return nil
+}
+
+func (d *Database) DeleteUser(login string) error {
+	query := `DELETE FROM users WHERE login = $1`
+	result, err := d.db.Exec(query, login)
+	if err != nil {
+		return fmt.Errorf("failed to delete user: %w", ErrInternalServer)
+	}
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return ErrInternalServer
+	}
+	if rows == 0 {
 		return ErrUserNotFound
 	}
 	return nil

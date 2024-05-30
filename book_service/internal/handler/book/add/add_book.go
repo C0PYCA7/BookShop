@@ -100,6 +100,7 @@ func New(log *slog.Logger, book AddBook, cfg config.JwtConfig) http.HandlerFunc 
 		_, _ = fmt.Fprintf(file, "\n")
 
 		log.Info("insert success")
+		_, err = fmt.Fprintln(logFile, fmt.Sprintf("NEWBOOK with id %d created", id))
 
 		render.JSON(w, r, Response{
 			Id:     id,

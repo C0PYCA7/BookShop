@@ -1,6 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.querySelector('#reg');
 
+    const logBtn = document.querySelector('#log')
+
+    logBtn.addEventListener('click', () => {
+        window.location.href = '/login'
+    })
+
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}T00:00:00Z`;
+    }
+
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
 
@@ -10,6 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const email = document.querySelector('#email').value;
         const login = document.querySelector('#login').value;
         const password = document.querySelector('#password').value;
+        const birthdayInput = document.querySelector('#birthday');
+        const birthday = formatDate(new Date(birthdayInput.value));
 
         const data = {
             name,
@@ -18,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
             email,
             login,
             password,
+            birthday
         };
 
         const jsonData = JSON.stringify(data);
@@ -32,9 +49,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (response.ok) {
             const data = await response.json();
+
+            if (data.error === "Age is less than 14"){
+                alert('Возраст должен быть более 14')
+            }
             if (data.status === 200) {
                 alert('Данные доставлены');
-                window.location.href = '/login'; // перенаправление на страницу входа
+                window.location.href = '/login';
             } else {
                 alert('Ошибка при отправке данных');
             }

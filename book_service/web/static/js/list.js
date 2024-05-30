@@ -3,10 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const addBookBtn = document.querySelector('#add-book-btn');
     const updateBtn = document.querySelector('#update-permission')
     const logoutBtn = document.querySelector('#logout')
-    // Получение токена из localStorage
+    const delBtn = document.querySelector('#del')
     const token = localStorage.getItem("Bearer")
-    alert("token from local storage: " + token)
-    // Функция для отправки запроса на защищенный роут с токеном в заголовке
+
     const sendAuthenticatedRequest = (url) => {
         fetch(url, {
             method: 'GET',
@@ -19,10 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert("Недостаточно прав")
                 }
                 if (response.ok) {
-                    // Если запрос успешен, перенаправляем пользователя на указанный URL
                     window.location.href = url;
                 } else {
-                    // В случае ошибки обрабатываем ее
                     console.error('Ошибка при отправке запроса:', response.statusText);
                 }
             })
@@ -32,17 +29,19 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     addAuthorBtn.addEventListener('click', () => {
-        // Отправка запроса на страницу создания нового автора с токеном в заголовке
         sendAuthenticatedRequest('/newauthor');
     });
 
     addBookBtn.addEventListener('click', () => {
-        // Отправка запроса на страницу создания новой книги с токеном в заголовке
         sendAuthenticatedRequest('/newbook');
     });
 
     updateBtn.addEventListener('click', () => {
         sendAuthenticatedRequest('/update')
+    })
+
+    delBtn.addEventListener('click', () => {
+        sendAuthenticatedRequest('/delete')
     })
 
     logoutBtn.addEventListener('click', () => {
@@ -60,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const bookDiv = document.createElement('div');
                 bookDiv.innerHTML = `
         <h2>${book.Name}</h2>
+        <p>Author: ${book.AuthorName} ${book.AuthorSurname}</p>
         <p>Genre: ${book.Genre}</p>
         <p>Price: ${book.Price}</p>
       `;

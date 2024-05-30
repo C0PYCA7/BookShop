@@ -1,4 +1,4 @@
-package update
+package delete
 
 import (
 	"BookShop/user_service/internal/config"
@@ -15,26 +15,28 @@ import (
 	"time"
 )
 
-type Updater interface {
-	UpdatePermission(login, permission string) error
-}
-
 type Request struct {
-	Login      string `json:"login" validate:"required"`
-	Permission string `json:"permission" validate:"required"`
+	Login string `json:"login"`
 }
 
 type Response struct {
 	Status int    `json:"status"`
-	Error  string `json:"err"`
+	Error  string `json:"err_msg,omitempty"`
+}
+
+type UserDeleter interface {
+	DeleteUser(login string) error
 }
 
 func ShowPage(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "user_service/web/template/update.html")
+	http.ServeFile(w, r, "user_service/web/template/delete.html")
 }
 
-func New(log *slog.Logger, updater Updater, cfg config.JwtConfig) http.HandlerFunc {
+func New(log *slog.Logger, deleter UserDeleter, cfg config.JwtConfig) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var req Request
+
+		date := time.Now().Format("2006-01-02 15:04:05")
 
 		file, err := os.OpenFile("data.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 		if err != nil {
@@ -48,11 +50,9 @@ func New(log *slog.Logger, updater Updater, cfg config.JwtConfig) http.HandlerFu
 		}
 		defer logFile.Close()
 
-		var req Request
-
 		if err := render.DecodeJSON(r.Body, &req); err != nil {
-			log.Error("Failed to decode request body")
-			_, err = fmt.Fprintln(logFile, "UPDATE Failed to decode request body")
+			log.Error("failed to decode request body")
+			_, err = fmt.Fprintln(logFile, "DELETE USER failed to decode request body")
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "Failed to decode request body",
@@ -63,30 +63,31 @@ func New(log *slog.Logger, updater Updater, cfg config.JwtConfig) http.HandlerFu
 
 		if err := validator.New().Struct(req); err != nil {
 			log.Error("invalid request")
-			_, err = fmt.Fprintln(logFile, "UPDATE invalid request")
+			_, err = fmt.Fprintln(logFile, "DELETE USER invalid request")
 			render.JSON(w, r, Response{
 				Status: http.StatusBadRequest,
 				Error:  "Invalid request",
 			})
+
 			return
 		}
 
-		err = updater.UpdatePermission(req.Login, req.Permission)
+		err = deleter.DeleteUser(req.Login)
 		if err != nil {
 			if errors.Is(err, postgres.ErrUserNotFound) {
-				log.Error("User not found")
-				_, err = fmt.Fprintln(logFile, fmt.Sprintf("UPDATE User not found: %s", req.Login))
+				log.Error("user not found")
+				_, err = fmt.Fprintln(logFile, fmt.Sprintf("DELETE USER failed to delete user: %s", req.Login))
 				render.JSON(w, r, Response{
 					Status: http.StatusNotFound,
 					Error:  "User not found",
 				})
 				return
 			}
-			log.Error("Failed to update user")
-			_, err = fmt.Fprintln(logFile, fmt.Sprintf("UPDATE Failed to update user: %s", req.Login))
+			log.Error("failed to delete user")
+			_, err = fmt.Fprintln(logFile, fmt.Sprintf("DELETE USER failed to delete user %s", req.Login))
 			render.JSON(w, r, Response{
 				Status: http.StatusInternalServerError,
-				Error:  "Failed to update user",
+				Error:  "Failed to delete user",
 			})
 			return
 		}
@@ -95,20 +96,17 @@ func New(log *slog.Logger, updater Updater, cfg config.JwtConfig) http.HandlerFu
 		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
 		uid := jwt.GetData(tokenString, cfg)
 
-		date := time.Now().Format("2006-01-02 15:04:05")
-
-		data := fmt.Sprintf("UPDATE: [%s] %s's permission updated to %s, by user with id:%s", date, req.Login, req.Permission, uid)
+		data := fmt.Sprintf("DELETE USER: [%s] user with id: %s deleted user with login %s", date, uid, req.Login)
 
 		_, err = fmt.Fprintf(file, data)
 		if err != nil {
 			log.Error("Failed to write file", slog.Any("data", data), slog.String("err", err.Error()))
-			_, err = fmt.Fprintln(logFile, "UPDATE Failed to write file")
 		}
 		_, _ = fmt.Fprintf(file, "\n")
-		_, _ = fmt.Fprintln(logFile, fmt.Sprintf("UPDATE permission updated to %s", req.Login))
+		_, _ = fmt.Fprintf(logFile, "DELETE USER deleted user with login %s", req.Login)
+
 		render.JSON(w, r, Response{
 			Status: http.StatusOK,
 		})
-
 	}
 }

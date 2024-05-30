@@ -32,7 +32,9 @@ type BookInfo struct {
 }
 
 type Book struct {
-	Name  string
-	Genre string
-	Price string
+	Name          string
+	AuthorName    string
+	AuthorSurname string
+	Genre         string
+	Price         string
 }
